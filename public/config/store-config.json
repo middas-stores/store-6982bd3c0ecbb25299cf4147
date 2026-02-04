@@ -1,50 +1,53 @@
 {
-  "storeId": "68e03cde5f3018eaef75750b",
-  "apiUrl": "http://localhost:8086",
+  "storeId": "6982bd3c0ecbb25299cf4147",
+  "apiUrl": "https://server.middas.app",
   "business": {
     "socialMedia": {
-      "instagram": "https://www.instagram.com/eldiscoinsumos",
-      "facebook": "https://www.facebook.com/eldiscoinsumosinformaticos"
+      "instagram": "",
+      "facebook": ""
     },
-    "name": "El Disco",
-    "description": "Comercio especializado en la venta de computación, insumos informáticos y de impresión. Amplia variedad de productos, con más de 20 años en la provincia de San Juan.",
-    "address": "Catamarca 105 Sur, San Juan",
-    "phone": "2643171515",
-    "whatsapp": "+5492643171515",
-    "email": "maticamisay99@gmail.com"
+    "name": "Matis",
+    "phone": "",
+    "email": "mati@gmail.com",
+    "description": "",
+    "address": "",
+    "hasPhysicalStore": false,
+    "whatsapp": ""
   },
   "branding": {
-    "logo": "https://middas.s3.amazonaws.com/store-logos/68e03cde5f3018eaef75750b/2c73ab4affeb86efbf0b15fca6a4235a.png",
-    "banner": "https://middas.s3.amazonaws.com/store-banners/68e03cde5f3018eaef75750b/50ce6dde9724b09327ca083ab0dcdb64.jpg",
+    "logo": "",
+    "banner": "",
     "bannerTitle": "¡Bienvenido a nuestra tienda!",
     "bannerSubtitle": "Encuentra los mejores productos",
     "colorScheme": {
-      "name": "fresh",
-      "primary": "#0066CC",
-      "secondary": "#FFFFFF",
-      "accent": "#00B4D8",
-      "background": "#F0F7FF"
+      "name": "elegant",
+      "primary": "#000000",
+      "secondary": "#D4AF37",
+      "accent": "#8B7355",
+      "background": "#F5F5F5"
     },
     "typography": {
-      "fontScheme": "modern",
-      "colors": {
-        "heading": "#1a1a1a",
-        "body": "#2d2d2d",
-        "muted": "#6b7280"
-      }
+      "colors": {},
+      "fontScheme": "elegant"
     }
+  },
+  "businessHours": {
+    "enabled": false,
+    "timezone": "America/Argentina/Buenos_Aires",
+    "schedule": []
   },
   "settings": {
     "showStock": true,
     "allowOrders": true,
     "orderMethod": "whatsapp",
     "showPrices": true,
+    "showFloatingWhatsapp": false,
     "currency": "ARS",
     "currencySymbol": "$"
   },
   "seo": {
-    "title": "El Disco Insumos",
-    "description": "Comercio especializado en la venta de computación, insumos informáticos y de impresión. Amplia variedad de productos, con más de 20 años en la provincia de San ",
+    "title": "",
+    "description": "",
     "keywords": []
   },
   "analytics": {}
