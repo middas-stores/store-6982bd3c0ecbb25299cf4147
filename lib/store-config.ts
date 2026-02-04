@@ -1,3 +1,12 @@
+export interface ProductVariant {
+  id: string
+  name: string
+  price: number
+  stock: number
+  image?: string
+  variantAttributes?: Record<string, string>
+}
+
 export interface Product {
   id: string
   name: string
@@ -7,6 +16,13 @@ export interface Product {
   category: string
   categoryId?: string
   stock: number
+  // Campos para productos agrupados (variantes)
+  isGroup?: boolean
+  variantCount?: number
+  priceRange?: { min: number; max: number } | null
+  attributes?: string[]
+  attributeValues?: Record<string, string[]>
+  variants?: ProductVariant[] | null
 }
 
 export interface BusinessHoursShift {
