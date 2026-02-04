@@ -1,0 +1,220 @@
+name: Update Store Configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      storeId:
+        description: 'Store ID (User ID)'
+        required: true
+        type: string
+      apiUrl:
+        description: 'API URL'
+        required: true
+        type: string
+      businessName:
+        description: 'Business Name'
+        required: true
+        type: string
+      businessDescription:
+        description: 'Business Description'
+        required: false
+        type: string
+      businessEmail:
+        description: 'Business Email'
+        required: false
+        type: string
+      businessPhone:
+        description: 'Business Phone'
+        required: false
+        type: string
+      businessWhatsapp:
+        description: 'Business WhatsApp'
+        required: false
+        type: string
+      businessAddress:
+        description: 'Business Address'
+        required: false
+        type: string
+      socialInstagram:
+        description: 'Instagram URL'
+        required: false
+        type: string
+      socialFacebook:
+        description: 'Facebook URL'
+        required: false
+        type: string
+      logo:
+        description: 'Logo URL'
+        required: false
+        type: string
+      banner:
+        description: 'Banner URL'
+        required: false
+        type: string
+      bannerTitle:
+        description: 'Banner Title'
+        required: false
+        type: string
+      bannerSubtitle:
+        description: 'Banner Subtitle'
+        required: false
+        type: string
+      colorScheme:
+        description: 'Color Scheme Name (elegant/fresh/natural/vibrant)'
+        required: false
+        type: string
+        default: 'elegant'
+      colorPrimary:
+        description: 'Primary Color (hex)'
+        required: false
+        type: string
+        default: '#000000'
+      colorSecondary:
+        description: 'Secondary Color (hex)'
+        required: false
+        type: string
+        default: '#D4AF37'
+      colorAccent:
+        description: 'Accent Color (hex)'
+        required: false
+        type: string
+        default: '#8B7355'
+      colorBackground:
+        description: 'Background Color (hex)'
+        required: false
+        type: string
+        default: '#F5F5F5'
+      showStock:
+        description: 'Show Stock'
+        required: false
+        type: boolean
+        default: true
+      showPrices:
+        description: 'Show Prices'
+        required: false
+        type: boolean
+        default: true
+      allowOrders:
+        description: 'Allow Orders'
+        required: false
+        type: boolean
+        default: true
+      orderMethod:
+        description: 'Order Method (whatsapp/email/form)'
+        required: false
+        type: string
+        default: 'whatsapp'
+      currency:
+        description: 'Currency Code'
+        required: false
+        type: string
+        default: 'ARS'
+      currencySymbol:
+        description: 'Currency Symbol'
+        required: false
+        type: string
+        default: '$'
+      seoTitle:
+        description: 'SEO Title'
+        required: false
+        type: string
+      seoDescription:
+        description: 'SEO Description'
+        required: false
+        type: string
+      seoKeywords:
+        description: 'SEO Keywords (comma separated)'
+        required: false
+        type: string
+      seoOgImage:
+        description: 'SEO OG Image URL'
+        required: false
+        type: string
+      googleAnalyticsId:
+        description: 'Google Analytics ID'
+        required: false
+        type: string
+      facebookPixelId:
+        description: 'Facebook Pixel ID'
+        required: false
+        type: string
+
+jobs:
+  update-config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update store configuration
+        run: |
+          # Create keywords array from comma-separated string
+          if [ -n "${{ inputs.seoKeywords }}" ]; then
+            IFS=',' read -ra KEYWORDS <<< "${{ inputs.seoKeywords }}"
+            KEYWORDS_JSON="["
+            for keyword in "${KEYWORDS[@]}"; do
+              KEYWORDS_JSON+="\"$(echo $keyword | xargs)\","
+            done
+            KEYWORDS_JSON="${KEYWORDS_JSON%,}]"
+          else
+            KEYWORDS_JSON="[]"
+          fi
+
+          # Create store-config.json
+          cat > public/config/store-config.json <<EOF
+          {
+            "storeId": "${{ inputs.storeId }}",
+            "apiUrl": "${{ inputs.apiUrl }}",
+            "business": {
+              "name": "${{ inputs.businessName }}",
+              "description": "${{ inputs.businessDescription }}",
+              "email": "${{ inputs.businessEmail }}",
+              "phone": "${{ inputs.businessPhone }}",
+              "whatsapp": "${{ inputs.businessWhatsapp }}",
+              "address": "${{ inputs.businessAddress }}",
+              "socialMedia": {
+                "instagram": "${{ inputs.socialInstagram }}",
+                "facebook": "${{ inputs.socialFacebook }}"
+              }
+            },
+            "branding": {
+              "logo": "${{ inputs.logo }}",
+              "banner": "${{ inputs.banner }}",
+              "bannerTitle": "${{ inputs.bannerTitle || '¡Bienvenido a nuestra tienda!' }}",
+              "bannerSubtitle": "${{ inputs.bannerSubtitle || 'Encuentra los mejores productos' }}",
+              "colorScheme": {
+                "name": "${{ inputs.colorScheme }}",
+                "primary": "${{ inputs.colorPrimary }}",
+                "secondary": "${{ inputs.colorSecondary }}",
+                "accent": "${{ inputs.colorAccent }}",
+                "background": "${{ inputs.colorBackground }}"
+              }
+            },
+            "settings": {
+              "showStock": ${{ inputs.showStock }},
+              "showPrices": ${{ inputs.showPrices }},
+              "allowOrders": ${{ inputs.allowOrders }},
+              "orderMethod": "${{ inputs.orderMethod }}",
+              "currency": "${{ inputs.currency }}",
+              "currencySymbol": "${{ inputs.currencySymbol }}"
+            },
+            "seo": {
+              "title": "${{ inputs.seoTitle || inputs.businessName + ' - Tienda Online' }}",
+              "description": "${{ inputs.seoDescription || 'Encuentra los mejores productos en nuestra tienda online' }}",
+              "keywords": ${KEYWORDS_JSON},
+              "ogImage": "${{ inputs.seoOgImage }}"
+            },
+            "analytics": {
+              "googleAnalyticsId": "${{ inputs.googleAnalyticsId }}",
+              "facebookPixelId": "${{ inputs.facebookPixelId }}"
+            }
+          }
+          EOF
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add public/config/store-config.json
+          git commit -m "Update store configuration for ${{ inputs.businessName }}"
+          git push
