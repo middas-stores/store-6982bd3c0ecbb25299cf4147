@@ -1,13 +1,15 @@
 "use client"
 
-import { X, Minus, Plus, Trash2, ShoppingBag, MessageCircle } from "lucide-react"
+import { X, Minus, Plus, Trash2, ShoppingBag, MessageCircle, UserCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
+import { useAuth } from "@/contexts/auth-context"
 import { useState, useEffect } from "react"
 import type { StoreConfig } from "@/lib/store-config"
 
 export function CartSidebar() {
   const { items, removeItem, updateQuantity, clearCart, totalPrice, isOpen, closeCart } = useCart()
+  const { customer, isAuthenticated } = useAuth()
   const [config, setConfig] = useState<StoreConfig | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
 
@@ -46,7 +48,19 @@ export function CartSidebar() {
   const handleWhatsAppOrder = () => {
     if (!config) return
 
-    const message = `Hola! Me gustaría hacer un pedido:\n\n${items
+    let message = `Hola! Me gustaría hacer un pedido:\n\n`
+    
+    // Add customer info if authenticated
+    if (isAuthenticated && customer) {
+      message += `Datos del cliente:\n`
+      message += `• Nombre: ${customer.name}\n`
+      message += `• Email: ${customer.email}\n`
+      if (customer.phone) message += `• Teléfono: ${customer.phone}\n`
+      if (customer.address) message += `• Dirección: ${customer.address}\n`
+      message += `\n`
+    }
+    
+    message += `Productos:\n${items
       .map((item) => `• ${item.name} x${item.quantity} - ${formatPrice((item.price || 0) * item.quantity)}`)
       .join("\n")}\n\nTotal: ${formatPrice(totalPrice)}`
 
@@ -194,6 +208,16 @@ export function CartSidebar() {
 
               {/* Footer */}
               <div className="border-t border-border bg-muted/30 p-4 space-y-4">
+                {/* User info when authenticated */}
+                {isAuthenticated && customer && (
+                  <div className="rounded-lg bg-primary/10 border border-primary/20 p-3">
+                    <div className="flex items-center gap-2 text-sm text-primary">
+                      <UserCheck className="h-4 w-4" />
+                      <span className="font-medium">Comprando como {customer.name}</span>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Subtotal */}
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Subtotal</span>

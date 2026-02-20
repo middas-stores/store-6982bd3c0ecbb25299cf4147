@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "sonner"
 import "./globals.css"
 import { CartProvider } from "@/contexts/cart-context"
+import { AuthProvider } from "@/contexts/auth-context"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { CartSidebar } from "@/components/cart-sidebar"
@@ -46,7 +47,8 @@ export default async function RootLayout({
     <html lang="es">
       <body className={`${fontScheme.body.variable} ${fontScheme.heading.variable}`}>
         <CartProvider>
-          <DynamicColorProvider config={config} />
+          <AuthProvider>
+            <DynamicColorProvider config={config} />
           <Suspense fallback={<div>Loading...</div>}>
             <Header />
             <main>{children}</main>
@@ -67,6 +69,7 @@ export default async function RootLayout({
               }}
             />
           </Suspense>
+          </AuthProvider>
         </CartProvider>
         <Analytics />
       </body>

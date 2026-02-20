@@ -1,9 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingCart, Menu, ChevronDown, Home, Grid3X3, Package } from "lucide-react"
+import { ShoppingCart, Menu, ChevronDown, Home, Grid3X3, Package, User, LogOut, UserCheck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/contexts/cart-context"
+import { useAuth } from "@/contexts/auth-context"
 import { useState, useEffect, useRef } from "react"
 import type { StoreConfig } from "@/lib/store-config"
 import type { Category } from "@/lib/api"
@@ -14,9 +15,17 @@ import {
   SheetTitle,
   SheetClose,
 } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Header() {
   const { totalItems, openCart } = useCart()
+  const { customer, isAuthenticated, logout } = useAuth()
   const [config, setConfig] = useState<StoreConfig | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
@@ -139,6 +148,47 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* User Menu */}
+          {isAuthenticated && customer ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <UserCheck className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium truncate">{customer.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{customer.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/cuenta">
+                    <User className="mr-2 h-4 w-4" />
+                    Mi cuenta
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/cuenta/pedidos">
+                    <Package className="mr-2 h-4 w-4" />
+                    Mis pedidos
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Cerrar sesión
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/cuenta/login">
+                <User className="h-5 w-5" />
+              </Link>
+            </Button>
+          )}
+
           {/* Cart Button */}
           <Button 
             variant="ghost" 
@@ -233,6 +283,57 @@ export function Header() {
               </>
             )}
           </nav>
+
+          {/* User Section for Mobile */}
+          <div className="border-t border-border pt-4">
+            {isAuthenticated && customer ? (
+              <div className="space-y-1">
+                <div className="px-4 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <UserCheck className="h-4 w-4" />
+                  Mi cuenta
+                </div>
+                <SheetClose asChild>
+                  <Link
+                    href="/cuenta"
+                    className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors hover:bg-muted"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-primary/40" />
+                    Mi perfil
+                  </Link>
+                </SheetClose>
+                <SheetClose asChild>
+                  <Link
+                    href="/cuenta/pedidos"
+                    className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors hover:bg-muted"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-primary/40" />
+                    Mis pedidos
+                  </Link>
+                </SheetClose>
+                <button
+                  onClick={() => {
+                    logout()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm transition-colors hover:bg-muted w-full text-left text-destructive"
+                >
+                  <span className="w-2 h-2 rounded-full bg-destructive/40" />
+                  Cerrar sesión
+                </button>
+              </div>
+            ) : (
+              <div className="px-4">
+                <SheetClose asChild>
+                  <Button asChild className="w-full" size="sm">
+                    <Link href="/cuenta/login">
+                      <User className="mr-2 h-4 w-4" />
+                      Iniciar sesión
+                    </Link>
+                  </Button>
+                </SheetClose>
+              </div>
+            )}
+          </div>
 
           {/* Footer del menú móvil */}
           <div className="absolute bottom-0 left-0 right-0 border-t border-border bg-muted/30 p-4">

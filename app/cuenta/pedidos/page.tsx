@@ -1,0 +1,310 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { useAuth } from "@/contexts/auth-context"
+import { 
+  Package, 
+  ArrowLeft, 
+  ChevronDown, 
+  ChevronUp, 
+  Calendar,
+  Hash,
+  ShoppingBag,
+  Loader2,
+  AlertCircle
+} from "lucide-react"
+
+interface OrderItem {
+  id: string
+  name: string
+  quantity: number
+  price: number
+  image?: string
+}
+
+interface Order {
+  id: string
+  orderNumber: string
+  items: OrderItem[]
+  total: number
+  status: "pending" | "confirmed" | "completed" | "cancelled"
+  createdAt: string
+}
+
+export default function OrdersPage() {
+  const router = useRouter()
+  const { customer, isAuthenticated, isLoading } = useAuth()
+  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(true)
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
+  const [config, setConfig] = useState<{ apiUrl: string; storeId: string } | null>(null)
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/cuenta/login")
+    }
+  }, [isAuthenticated, isLoading, router])
+
+  useEffect(() => {
+    fetch("/config/store-config.json")
+      .then((res) => res.json())
+      .then((data) => {
+        setConfig({ apiUrl: data.apiUrl, storeId: data.storeId })
+      })
+      .catch((error) => {
+        console.error("Error loading store config:", error)
+        setOrdersLoading(false)
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!config || !customer) return
+
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem("store_auth_token")
+        if (!token) return
+
+        const response = await fetch(`${config.apiUrl}/api/public/store/${config.storeId}/auth/orders`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setOrders(data)
+        }
+      } catch (error) {
+        console.error("Error fetching orders:", error)
+      } finally {
+        setOrdersLoading(false)
+      }
+    }
+
+    fetchOrders()
+  }, [config, customer])
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+      case "confirmed":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
+      case "completed":
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+      case "cancelled":
+        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+    }
+  }
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "Pendiente"
+      case "confirmed":
+        return "Confirmado"
+      case "completed":
+        return "Completado"
+      case "cancelled":
+        return "Cancelado"
+      default:
+        return "Desconocido"
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("es-AR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+  }
+
+  const formatPrice = (price: number) => {
+    return `$${price.toLocaleString("es-AR")}`
+  }
+
+  const toggleOrderExpansion = (orderId: string) => {
+    const newExpanded = new Set(expandedOrders)
+    if (newExpanded.has(orderId)) {
+      newExpanded.delete(orderId)
+    } else {
+      newExpanded.add(orderId)
+    }
+    setExpandedOrders(newExpanded)
+  }
+
+  if (isLoading || ordersLoading) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Cargando tus pedidos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated || !customer) {
+    return null
+  }
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/cuenta">
+                  <ArrowLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold">Mis Pedidos</h1>
+                <p className="text-muted-foreground">
+                  Historial completo de tus pedidos
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Orders List */}
+        {orders.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <div className="max-w-md mx-auto space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-muted flex items-center justify-center">
+                  <ShoppingBag className="h-8 w-8 text-muted-foreground/50" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">No tenés pedidos aún</h3>
+                  <p className="text-muted-foreground">
+                    Cuando realices tu primer pedido, aparecerá aquí con toda la información
+                  </p>
+                </div>
+                <Button asChild className="mt-6">
+                  <Link href="/productos">
+                    <ShoppingBag className="mr-2 h-4 w-4" />
+                    Explorar productos
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <Card key={order.id}>
+                <Collapsible>
+                  <CardHeader>
+                    <CollapsibleTrigger 
+                      className="w-full"
+                      onClick={() => toggleOrderExpansion(order.id)}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Package className="h-6 w-6 text-primary" />
+                          </div>
+                          <div className="text-left">
+                            <div className="flex items-center gap-2 mb-1">
+                              <CardTitle className="text-lg">
+                                Pedido #{order.orderNumber}
+                              </CardTitle>
+                              <Badge className={getStatusColor(order.status)}>
+                                {getStatusText(order.status)}
+                              </Badge>
+                            </div>
+                            <CardDescription className="flex items-center gap-4">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                {formatDate(order.createdAt)}
+                              </span>
+                              <span className="font-semibold text-primary">
+                                {formatPrice(order.total)}
+                              </span>
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            {order.items.length} {order.items.length === 1 ? "producto" : "productos"}
+                          </span>
+                          {expandedOrders.has(order.id) ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </div>
+                      </div>
+                    </CollapsibleTrigger>
+                  </CardHeader>
+                  
+                  <CollapsibleContent>
+                    <CardContent className="pt-0">
+                      <Separator className="mb-4" />
+                      <div className="space-y-3">
+                        <h4 className="font-medium">Productos del pedido:</h4>
+                        {order.items.map((item) => (
+                          <div key={item.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                            <div className="relative">
+                              <img
+                                src={item.image || "/placeholder.svg"}
+                                alt={item.name}
+                                className="w-16 h-16 rounded-lg object-cover"
+                              />
+                              {item.quantity > 1 && (
+                                <span className="absolute -top-2 -right-2 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">
+                                  {item.quantity}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <h5 className="font-medium line-clamp-1">{item.name}</h5>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>Cantidad: {item.quantity}</span>
+                                <span>•</span>
+                                <span>Precio: {formatPrice(item.price)}</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold">
+                                {formatPrice(item.price * item.quantity)}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        <div className="flex justify-between items-center pt-4 border-t">
+                          <span className="font-semibold text-lg">Total del pedido:</span>
+                          <span className="font-bold text-xl text-primary">
+                            {formatPrice(order.total)}
+                          </span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Collapsible>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
