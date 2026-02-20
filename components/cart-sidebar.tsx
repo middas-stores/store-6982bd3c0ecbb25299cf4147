@@ -7,7 +7,7 @@ import { useState, useEffect } from "react"
 import type { StoreConfig } from "@/lib/store-config"
 
 export function CartSidebar() {
-  const { items, removeItem, updateQuantity, totalPrice, isOpen, closeCart } = useCart()
+  const { items, removeItem, updateQuantity, clearCart, totalPrice, isOpen, closeCart } = useCart()
   const [config, setConfig] = useState<StoreConfig | null>(null)
   const [removingId, setRemovingId] = useState<string | null>(null)
 
@@ -84,9 +84,24 @@ export function CartSidebar() {
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={closeCart} className="rounded-full">
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              {items.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (window.confirm('¿Vaciar el carrito?')) clearCart()
+                  }}
+                  className="text-xs text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Vaciar
+                </Button>
+              )}
+              <Button variant="ghost" size="icon" onClick={closeCart} className="rounded-full">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
           {items.length === 0 ? (
