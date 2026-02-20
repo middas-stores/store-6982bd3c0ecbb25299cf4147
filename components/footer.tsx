@@ -24,13 +24,6 @@ export function Footer() {
 
   return (
     <footer className="border-t border-border bg-muted/30">
-      {/* Map Section - Full width above footer content */}
-      {showMap && (
-        <div className="container mx-auto px-4 pt-8">
-          <LocationMap address={config.business.address} businessName={config.business.name} />
-        </div>
-      )}
-
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -119,6 +112,13 @@ export function Footer() {
               )}
             </div>
           </div>
+
+          {/* Map Column */}
+          {showMap && (
+            <div className="md:col-span-2 lg:col-span-4">
+              <LocationMap address={config.business.address} businessName={config.business.name} compact />
+            </div>
+          )}
         </div>
 
         <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">

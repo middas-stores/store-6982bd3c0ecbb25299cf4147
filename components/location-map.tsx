@@ -5,9 +5,10 @@ import { MapPin } from "lucide-react"
 interface LocationMapProps {
   address: string
   businessName: string
+  compact?: boolean
 }
 
-export function LocationMap({ address, businessName }: LocationMapProps) {
+export function LocationMap({ address, businessName, compact = false }: LocationMapProps) {
   if (!address) {
     return null
   }
@@ -16,6 +17,43 @@ export function LocationMap({ address, businessName }: LocationMapProps) {
   const encodedAddress = encodeURIComponent(`${address}, Argentina`)
   const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddress}`
   const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`
+
+  if (compact) {
+    return (
+      <div className="rounded-lg border border-border bg-card overflow-hidden">
+        <div className="flex flex-col md:flex-row">
+          <div className="w-full md:w-1/2 h-[250px]">
+            <iframe
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+              src={mapUrl}
+              title={`Ubicación de ${businessName}`}
+            />
+          </div>
+          <div className="flex flex-col justify-center p-5 md:w-1/2">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Nuestra ubicación</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">{address}</p>
+            <a
+              href={directionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+            >
+              <MapPin className="h-4 w-4" />
+              Cómo llegar
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="rounded-lg border border-border bg-card overflow-hidden">
