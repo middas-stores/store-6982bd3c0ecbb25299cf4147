@@ -100,11 +100,13 @@ export function DynamicColorProvider({ config }: DynamicColorProviderProps) {
       }
 
       /*
-       * Inputs and form elements should always use foreground color
-       * regardless of ancestor backgrounds.
+       * Inputs and form elements always use dark text.
        */
       input, textarea, select, [data-slot="input"] {
-        color: ${palette.foreground} !important;
+        color: oklch(0.17 0.01 60) !important;
+      }
+      input::placeholder, textarea::placeholder {
+        color: oklch(0.50 0.01 60) !important;
       }
 
       /*
