@@ -38,7 +38,6 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const mobileSearchInputRef = useRef<HTMLInputElement>(null)
   const prevTotalItems = useRef(totalItems)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -47,17 +46,9 @@ export function Header() {
     const q = searchQuery.trim()
     if (!q) return
     router.push(`/productos?search=${encodeURIComponent(q)}`)
-    setSearchQuery("")
     setSearchOpen(false)
     setIsMobileMenuOpen(false)
   }
-
-  // Focus search input when opened
-  useEffect(() => {
-    if (searchOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 100)
-    }
-  }, [searchOpen])
 
   useEffect(() => {
     fetch("/config/store-config.json")
@@ -172,36 +163,25 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Desktop Search */}
-          <div className="hidden md:flex items-center">
-            {searchOpen ? (
-              <form onSubmit={handleSearch} className="flex items-center gap-2 animate-in slide-in-from-right-4 duration-200">
-                <Input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Buscar productos..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-48 lg:w-64 h-9 text-sm"
-                  onKeyDown={(e) => { if (e.key === 'Escape') { setSearchOpen(false); setSearchQuery(""); } }}
-                />
-                <Button type="button" variant="ghost" size="icon" className="h-9 w-9" onClick={() => { setSearchOpen(false); setSearchQuery(""); }}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </form>
-            ) : (
-              <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)}>
-                <Search className="h-5 w-5" />
-              </Button>
-            )}
-          </div>
+          {/* Desktop Search - always visible */}
+          <form onSubmit={handleSearch} className="hidden md:flex items-center relative">
+            <Search className="absolute left-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <Input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Buscar productos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-48 lg:w-64 h-9 text-sm pl-8 bg-white border-border"
+            />
+          </form>
 
           {/* Mobile Search Button */}
           <Button 
             variant="ghost" 
             size="icon" 
             className="md:hidden"
-            onClick={() => { setSearchOpen(!searchOpen); }}
+            onClick={() => setSearchOpen(!searchOpen)}
           >
             <Search className="h-5 w-5" />
           </Button>
@@ -283,12 +263,11 @@ export function Header() {
         <div className="md:hidden border-b border-border bg-background px-4 py-2 animate-in slide-in-from-top-2 duration-200">
           <form onSubmit={handleSearch} className="flex items-center gap-2">
             <Input
-              ref={mobileSearchInputRef}
               type="text"
               placeholder="Buscar productos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 h-9 text-sm"
+              className="flex-1 h-9 text-sm bg-white"
               autoFocus
             />
             <Button type="submit" size="sm" disabled={!searchQuery.trim()}>

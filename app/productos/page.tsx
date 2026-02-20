@@ -13,6 +13,7 @@ import { getProducts, getCategories, type Category } from "@/lib/api"
 export default function ProductsPage() {
   const searchParams = useSearchParams()
   const categoryFilter = searchParams.get("categoria")
+  const searchFilter = searchParams.get("search")
 
   const [config, setConfig] = useState<StoreConfig | null>(null)
   const [products, setProducts] = useState<Product[]>([])
@@ -43,10 +44,17 @@ export default function ProductsPage() {
     loadData()
   }, [])
 
-  // Filtrar productos por categoría si hay filtro activo
-  const filteredProducts = categoryFilter
-    ? products.filter((p) => p.categoryId === categoryFilter)
-    : products
+  // Filtrar productos por categoría y búsqueda
+  const filteredProducts = products.filter((p) => {
+    if (categoryFilter && p.categoryId !== categoryFilter) return false
+    if (searchFilter) {
+      const q = searchFilter.toLowerCase()
+      const name = (p.name || "").toLowerCase()
+      const desc = (p.description || "").toLowerCase()
+      if (!name.includes(q) && !desc.includes(q)) return false
+    }
+    return true
+  })
 
   // Obtener nombre de la categoría activa
   const activeCategory = categoryFilter
@@ -99,7 +107,7 @@ export default function ProductsPage() {
               headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            {activeCategory && (
+            {(activeCategory || searchFilter) && (
               <Link
                 href="/productos"
                 className="inline-flex items-center gap-2 text-sm text-primary hover:underline mb-4 group"
@@ -119,11 +127,15 @@ export default function ProductsPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold md:text-4xl">
-                  {activeCategory ? activeCategory.name : "Todos los Productos"}
+                  {searchFilter
+                    ? `Resultados para "${searchFilter}"`
+                    : activeCategory
+                      ? activeCategory.name
+                      : "Todos los Productos"}
                 </h1>
                 <p className="text-muted-foreground">
                   {filteredProducts.length} {filteredProducts.length === 1 ? 'producto' : 'productos'}
-                  {activeCategory ? ` en ${activeCategory.name}` : ' disponibles'}
+                  {activeCategory ? ` en ${activeCategory.name}` : searchFilter ? ' encontrados' : ' disponibles'}
                 </p>
               </div>
             </div>
@@ -175,13 +187,17 @@ export default function ProductsPage() {
             <div className="text-center py-16">
               <div className="max-w-md mx-auto">
                 <Package className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-                <h3 className="text-lg font-medium mb-2">No hay productos disponibles</h3>
+                <h3 className="text-lg font-medium mb-2">
+                  {searchFilter ? 'Sin resultados' : 'No hay productos disponibles'}
+                </h3>
                 <p className="text-muted-foreground mb-6">
-                  {activeCategory 
-                    ? `No encontramos productos en la categoría ${activeCategory.name}`
-                    : 'Pronto agregaremos nuevos productos'}
+                  {searchFilter
+                    ? `No encontramos productos para "${searchFilter}"`
+                    : activeCategory 
+                      ? `No encontramos productos en la categoría ${activeCategory.name}`
+                      : 'Pronto agregaremos nuevos productos'}
                 </p>
-                {activeCategory && (
+                {(activeCategory || searchFilter) && (
                   <Button asChild variant="outline">
                     <Link href="/productos">
                       <ArrowLeft className="mr-2 h-4 w-4" />
