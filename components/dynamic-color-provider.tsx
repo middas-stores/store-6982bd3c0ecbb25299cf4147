@@ -48,11 +48,8 @@ export function DynamicColorProvider({ config }: DynamicColorProviderProps) {
         color: ${palette.heading} !important;
       }
       .bg-primary h1, .bg-primary h2, .bg-primary h3, .bg-primary h4, .bg-primary h5, .bg-primary h6,
-      [class*="bg-primary"] h1, [class*="bg-primary"] h2, [class*="bg-primary"] h3,
       .bg-secondary h1, .bg-secondary h2, .bg-secondary h3, .bg-secondary h4, .bg-secondary h5, .bg-secondary h6,
-      [class*="bg-secondary"] h1, [class*="bg-secondary"] h2, [class*="bg-secondary"] h3,
-      .bg-accent h1, .bg-accent h2, .bg-accent h3, .bg-accent h4, .bg-accent h5, .bg-accent h6,
-      [class*="bg-accent"] h1, [class*="bg-accent"] h2, [class*="bg-accent"] h3 {
+      .bg-accent h1, .bg-accent h2, .bg-accent h3, .bg-accent h4, .bg-accent h5, .bg-accent h6 {
         color: inherit !important;
       }
 
@@ -67,40 +64,47 @@ export function DynamicColorProvider({ config }: DynamicColorProviderProps) {
       }
 
       /*
-       * AUTO-CONTRAST: any element on a colored background
-       * inherits the correct foreground color for readability.
-       * Covers buttons, badges, pills, etc.
+       * AUTO-CONTRAST: elements with solid colored backgrounds
+       * get the correct foreground color for readability.
+       * Only target exact bg-* classes, NOT gradients (from-*/to-*) or opacity variants.
        */
-      .bg-primary,
-      [class*="bg-primary"]:not([class*="bg-primary/"]) {
+      .bg-primary {
         color: ${palette.primaryForeground} !important;
       }
-      /* Primary with opacity (bg-primary/N) — keep foreground but allow opacity on bg */
-      [class*="bg-primary/"] {
-        color: ${palette.primaryForeground};
-      }
 
-      .bg-secondary,
-      [class*="bg-secondary"]:not([class*="bg-secondary/"]) {
+      .bg-secondary {
         color: ${palette.secondaryForeground} !important;
       }
 
-      .bg-accent,
-      [class*="bg-accent"]:not([class*="bg-accent/"]) {
+      .bg-accent {
         color: ${palette.accentForeground} !important;
       }
 
       /*
-       * SVG icons inside colored backgrounds should inherit the text color
-       * so they contrast correctly too.
+       * Opacity variants of bg-primary (bg-primary/90, bg-primary/10, etc)
+       * Only apply to elements that are visually solid enough.
+       * Use non-important so children can override.
+       */
+      [class~="bg-primary/90"],
+      [class~="bg-primary/80"] {
+        color: ${palette.primaryForeground};
+      }
+
+      /*
+       * SVG icons inside solid colored backgrounds inherit text color.
        */
       .bg-primary svg,
-      [class*="bg-primary"] svg,
       .bg-secondary svg,
-      [class*="bg-secondary"] svg,
-      .bg-accent svg,
-      [class*="bg-accent"] svg {
+      .bg-accent svg {
         color: inherit !important;
+      }
+
+      /*
+       * Inputs and form elements should always use foreground color
+       * regardless of ancestor backgrounds.
+       */
+      input, textarea, select, [data-slot="input"] {
+        color: ${palette.foreground} !important;
       }
 
       /*
@@ -132,7 +136,7 @@ export function DynamicColorProvider({ config }: DynamicColorProviderProps) {
        * Ensure text-primary (used for links, highlights) stays the primary color
        * when NOT on a primary background.
        */
-      .text-primary:not(.bg-primary):not([class*="bg-primary"]) {
+      .text-primary:not(.bg-primary) {
         color: var(--primary) !important;
       }
     `
