@@ -5,7 +5,7 @@ import { ProductSkeleton } from "@/components/product-skeleton"
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Package, Grid3X3, Filter } from "lucide-react"
+import { ArrowLeft, Package, Grid3X3, Filter, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { StoreConfig, Product } from "@/lib/store-config"
 import { getProducts, getCategories, type Category } from "@/lib/api"
@@ -119,13 +119,15 @@ export default function ProductsPage() {
             
             <div className="flex items-center gap-3 mb-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                {activeCategory ? (
+                {searchFilter ? (
+                  <Search className="h-6 w-6 text-primary" />
+                ) : activeCategory ? (
                   <Grid3X3 className="h-6 w-6 text-primary" />
                 ) : (
                   <Package className="h-6 w-6 text-primary" />
                 )}
               </div>
-              <div>
+              <div className="flex-1">
                 <h1 className="text-3xl font-bold md:text-4xl">
                   {searchFilter
                     ? `Resultados para "${searchFilter}"`
@@ -138,11 +140,19 @@ export default function ProductsPage() {
                   {activeCategory ? ` en ${activeCategory.name}` : searchFilter ? ' encontrados' : ' disponibles'}
                 </p>
               </div>
+              {searchFilter && (
+                <Link href="/productos">
+                  <Button variant="outline" size="sm" className="gap-2 shrink-0">
+                    <X className="h-4 w-4" />
+                    Limpiar búsqueda
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
           
-          {/* Category Pills */}
-          {categories.length > 0 && (
+          {/* Category Pills - hidden when search is active */}
+          {categories.length > 0 && !searchFilter && (
             <div 
               className={`flex flex-wrap gap-2 mt-6 transition-all duration-500 ease-out ${
                 headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { ShoppingCart, Menu, ChevronDown, Home, Grid3X3, Package, User, LogOut, UserCheck, Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,10 +35,17 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [cartBounce, setCartBounce] = useState(false)
+  const currentSearchParams = useSearchParams()
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const searchInputRef = useRef<HTMLInputElement>(null)
   const prevTotalItems = useRef(totalItems)
+
+  // Sync search input with URL on mount and navigation
+  useEffect(() => {
+    const urlSearch = currentSearchParams.get("search") || ""
+    setSearchQuery(urlSearch)
+  }, [currentSearchParams])
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const handleSearch = (e?: React.FormEvent) => {
@@ -172,8 +179,17 @@ export function Header() {
               placeholder="Buscar productos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-48 lg:w-64 h-9 text-sm pl-8 bg-white border-border"
+              className="w-48 lg:w-64 h-9 text-sm pl-8 pr-8 bg-white border-border"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(""); router.push("/productos"); searchInputRef.current?.focus(); }}
+                className="absolute right-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </form>
 
           {/* Mobile Search Button */}
