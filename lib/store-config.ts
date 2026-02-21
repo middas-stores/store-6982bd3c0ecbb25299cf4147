@@ -89,6 +89,35 @@ export interface StoreConfig {
     currency: string
     currencySymbol: string
   }
+  paymentMethods?: {
+    transfer?: {
+      enabled: boolean
+      bankName?: string
+      cbu?: string
+      alias?: string
+      holder?: string
+    }
+    cash?: {
+      enabled: boolean
+      instructions?: string
+    }
+    mercadopago?: {
+      enabled: boolean
+    }
+  }
+  shippingMethods?: {
+    pickup?: {
+      enabled: boolean
+      instructions?: string
+    }
+    delivery?: {
+      enabled: boolean
+      cost?: number
+      freeAbove?: number
+      zones?: string
+      estimatedTime?: string
+    }
+  }
   seo: {
     title: string
     description: string
