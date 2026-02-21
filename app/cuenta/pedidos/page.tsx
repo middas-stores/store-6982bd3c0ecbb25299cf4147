@@ -80,7 +80,7 @@ export default function OrdersPage() {
 
         if (response.ok) {
           const data = await response.json()
-          setOrders(data)
+          setOrders(data.orders || data)
         }
       } catch (error) {
         console.error("Error fetching orders:", error)
@@ -95,6 +95,7 @@ export default function OrdersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
+      case "pending_confirmation":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
       case "confirmed":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400"
@@ -111,6 +112,8 @@ export default function OrdersPage() {
     switch (status) {
       case "pending":
         return "Pendiente"
+      case "pending_confirmation":
+        return "Pendiente de confirmación"
       case "confirmed":
         return "Confirmado"
       case "completed":
@@ -209,12 +212,12 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
-              <Card key={order.id}>
+              <Card key={order.orderNumber}>
                 <Collapsible>
                   <CardHeader>
                     <CollapsibleTrigger 
                       className="w-full"
-                      onClick={() => toggleOrderExpansion(order.id)}
+                      onClick={() => toggleOrderExpansion(order.orderNumber)}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-4">
@@ -245,7 +248,7 @@ export default function OrdersPage() {
                           <span className="text-sm text-muted-foreground">
                             {order.items.length} {order.items.length === 1 ? "producto" : "productos"}
                           </span>
-                          {expandedOrders.has(order.id) ? (
+                          {expandedOrders.has(order.orderNumber) ? (
                             <ChevronUp className="h-4 w-4" />
                           ) : (
                             <ChevronDown className="h-4 w-4" />
@@ -260,8 +263,8 @@ export default function OrdersPage() {
                       <Separator className="mb-4" />
                       <div className="space-y-3">
                         <h4 className="font-medium">Productos del pedido:</h4>
-                        {order.items.map((item) => (
-                          <div key={item.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
                             <div className="relative">
                               <img
                                 src={item.image || "/placeholder.svg"}
