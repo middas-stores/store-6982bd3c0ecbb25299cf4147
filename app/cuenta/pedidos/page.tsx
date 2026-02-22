@@ -18,7 +18,9 @@ import {
   Hash,
   ShoppingBag,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  AlertTriangle,
+  XCircle
 } from "lucide-react"
 
 interface OrderItem {
@@ -34,8 +36,9 @@ interface Order {
   orderNumber: string
   items: OrderItem[]
   total: number
-  status: "pending" | "confirmed" | "completed" | "cancelled"
+  status: "pending" | "pending_confirmation" | "confirmed" | "completed" | "cancelled"
   createdAt: string
+  updatedAt?: string
 }
 
 export default function OrdersPage() {
@@ -137,6 +140,14 @@ export default function OrdersPage() {
 
   const formatPrice = (price: number) => {
     return `$${price.toLocaleString("es-AR")}`
+  }
+
+  const wasModified = (order: Order) => {
+    if (!order.updatedAt) return false
+    const created = new Date(order.createdAt).getTime()
+    const updated = new Date(order.updatedAt).getTime()
+    // Consider modified if updated more than 1 minute after creation
+    return (updated - created) > 60000
   }
 
   const toggleOrderExpansion = (orderId: string) => {
@@ -262,33 +273,71 @@ export default function OrdersPage() {
                     <CardContent className="pt-0">
                       <Separator className="mb-4" />
                       <div className="space-y-3">
+                        {/* Modified order banner */}
+                        {wasModified(order) && (
+                          <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-300 text-sm">
+                            <AlertTriangle className="h-4 w-4 shrink-0" />
+                            <span>La tienda modificó este pedido</span>
+                          </div>
+                        )}
+                        
                         <h4 className="font-medium">Productos del pedido:</h4>
                         {order.items.map((item, idx) => (
-                          <div key={idx} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                          <div 
+                            key={idx} 
+                            className={`flex items-center gap-4 p-3 rounded-lg ${
+                              item.quantity === 0 
+                                ? "bg-red-50/50 dark:bg-red-950/20 border border-red-200/50 dark:border-red-800/30" 
+                                : "bg-muted/50"
+                            }`}
+                          >
                             <div className="relative">
                               <img
                                 src={item.image || "/placeholder.svg"}
                                 alt={item.name}
-                                className="w-16 h-16 rounded-lg object-cover"
+                                className={`w-16 h-16 rounded-lg object-cover ${
+                                  item.quantity === 0 ? "opacity-40 grayscale" : ""
+                                }`}
                               />
                               {item.quantity > 1 && (
                                 <span className="absolute -top-2 -right-2 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">
                                   {item.quantity}
                                 </span>
                               )}
+                              {item.quantity === 0 && (
+                                <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center">
+                                  <XCircle className="h-4 w-4" />
+                                </span>
+                              )}
                             </div>
                             <div className="flex-1">
-                              <h5 className="font-medium line-clamp-1">{item.name}</h5>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <span>Cantidad: {item.quantity}</span>
-                                <span>•</span>
-                                <span>Precio: {formatPrice(item.price)}</span>
-                              </div>
+                              <h5 className={`font-medium line-clamp-1 ${
+                                item.quantity === 0 ? "line-through text-muted-foreground" : ""
+                              }`}>
+                                {item.name}
+                              </h5>
+                              {item.quantity === 0 ? (
+                                <span className="inline-flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded-full">
+                                  Sin stock
+                                </span>
+                              ) : (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <span>Cantidad: {item.quantity}</span>
+                                  <span>•</span>
+                                  <span>Precio: {formatPrice(item.price)}</span>
+                                </div>
+                              )}
                             </div>
                             <div className="text-right">
-                              <p className="font-semibold">
-                                {formatPrice(item.price * item.quantity)}
-                              </p>
+                              {item.quantity === 0 ? (
+                                <p className="text-sm text-muted-foreground line-through">
+                                  {formatPrice(item.price)}
+                                </p>
+                              ) : (
+                                <p className="font-semibold">
+                                  {formatPrice(item.price * item.quantity)}
+                                </p>
+                              )}
                             </div>
                           </div>
                         ))}
