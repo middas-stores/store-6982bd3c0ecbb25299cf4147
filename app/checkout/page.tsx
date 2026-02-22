@@ -184,7 +184,7 @@ export default function CheckoutPage() {
 
   const orderMethodLabel = config?.settings.orderMethod === "direct" ? "Confirmar pedido" : "Consultar disponibilidad"
   const isQuote = config?.settings.orderMethod === "quote"
-  const showTransferDetails = selectedPayment === "transfer" && config?.paymentMethods?.transfer
+  const showTransferDetails = selectedPayment === "transfer" && config?.paymentMethods?.transfer && !isQuote
   const missingSelection = (hasShippingOptions && !selectedShipping) || (hasPaymentOptions && !selectedPayment)
   const canSubmit = !isSubmitting && !!formData.name.trim() && !!formData.phone.trim() && !missingSelection
 
