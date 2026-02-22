@@ -16,7 +16,6 @@ import {
   Phone, 
   MapPin, 
   Package, 
-  DollarSign, 
   Edit, 
   LogOut, 
   ShoppingBag,
@@ -78,10 +77,6 @@ export default function AccountPage() {
     } finally {
       setIsUpdating(false)
     }
-  }
-
-  const formatPrice = (price: number) => {
-    return `$${price.toLocaleString("es-AR")}`
   }
 
   if (isLoading) {
@@ -237,19 +232,11 @@ export default function AccountPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-primary/5 rounded-lg">
-                  <div className="text-2xl font-bold text-primary">
-                    {customer.totalOrders || 0}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Pedidos totales</p>
+              <div className="text-center p-4 bg-primary/5 rounded-lg">
+                <div className="text-2xl font-bold text-primary">
+                  {customer.totalOrders || 0}
                 </div>
-                <div className="text-center p-4 bg-primary/5 rounded-lg">
-                  <div className="text-2xl font-bold text-primary">
-                    {customer.totalSpent ? formatPrice(customer.totalSpent) : "$0"}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Total gastado</p>
-                </div>
+                <p className="text-sm text-muted-foreground">Pedidos totales</p>
               </div>
               
               <Separator />
