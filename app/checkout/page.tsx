@@ -185,6 +185,8 @@ export default function CheckoutPage() {
   const orderMethodLabel = config?.settings.orderMethod === "direct" ? "Confirmar pedido" : "Consultar disponibilidad"
   const isQuote = config?.settings.orderMethod === "quote"
   const showTransferDetails = selectedPayment === "transfer" && config?.paymentMethods?.transfer
+  const missingSelection = (hasShippingOptions && !selectedShipping) || (hasPaymentOptions && !selectedPayment)
+  const canSubmit = !isSubmitting && !!formData.name.trim() && !!formData.phone.trim() && !missingSelection
 
   // Success state
   if (orderSuccess) {
@@ -440,9 +442,14 @@ export default function CheckoutPage() {
 
               {/* Submit - mobile */}
               <div className="lg:hidden">
-                <Button type="submit" className="w-full" size="lg" disabled={isSubmitting || !formData.name.trim() || !formData.phone.trim()}>
+                <Button type="submit" className="w-full" size="lg" disabled={!canSubmit}>
                   {isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Procesando...</> : orderMethodLabel}
                 </Button>
+                {missingSelection && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Seleccioná método de {hasShippingOptions && !selectedShipping ? "envío" : ""}{hasShippingOptions && !selectedShipping && hasPaymentOptions && !selectedPayment ? " y " : ""}{hasPaymentOptions && !selectedPayment ? "pago" : ""} para continuar
+                  </p>
+                )}
               </div>
             </form>
           </div>
@@ -511,9 +518,14 @@ export default function CheckoutPage() {
 
               {/* Submit - desktop */}
               <div className="hidden lg:block mt-6">
-                <Button type="submit" form="checkout-form" className="w-full" size="lg" disabled={isSubmitting || !formData.name.trim() || !formData.phone.trim()}>
+                <Button type="submit" form="checkout-form" className="w-full" size="lg" disabled={!canSubmit}>
                   {isSubmitting ? <><Loader2 className="mr-2 h-5 w-5 animate-spin" />Procesando...</> : orderMethodLabel}
                 </Button>
+                {missingSelection && (
+                  <p className="text-xs text-muted-foreground text-center mt-2">
+                    Seleccioná método de {hasShippingOptions && !selectedShipping ? "envío" : ""}{hasShippingOptions && !selectedShipping && hasPaymentOptions && !selectedPayment ? " y " : ""}{hasPaymentOptions && !selectedPayment ? "pago" : ""} para continuar
+                  </p>
+                )}
               </div>
             </div>
           </div>
