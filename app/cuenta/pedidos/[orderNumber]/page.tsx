@@ -294,7 +294,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Transfer details */}
-        {(order.status === "confirmed" || order.status === "paid") && order.transferDetails && (
+        {order.status === "confirmed" && order.transferDetails && (
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-5 space-y-3">
             <h3 className="font-semibold text-blue-900 dark:text-blue-300 flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
