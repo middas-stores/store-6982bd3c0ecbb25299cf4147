@@ -20,7 +20,10 @@ import {
   Loader2,
   AlertCircle,
   AlertTriangle,
-  XCircle
+  XCircle,
+  CreditCard,
+  Copy,
+  Check
 } from "lucide-react"
 
 interface OrderItem {
@@ -31,6 +34,13 @@ interface OrderItem {
   image?: string
 }
 
+interface TransferDetails {
+  bankName?: string
+  cbu?: string
+  alias?: string
+  holder?: string
+}
+
 interface Order {
   id: string
   orderNumber: string
@@ -39,6 +49,8 @@ interface Order {
   status: "pending" | "pending_confirmation" | "confirmed" | "completed" | "cancelled"
   createdAt: string
   updatedAt?: string
+  paymentMethod?: { method: string; label: string }
+  transferDetails?: TransferDetails
 }
 
 export default function OrdersPage() {
@@ -48,6 +60,7 @@ export default function OrdersPage() {
   const [ordersLoading, setOrdersLoading] = useState(true)
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
   const [config, setConfig] = useState<{ apiUrl: string; storeId: string } | null>(null)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -140,6 +153,12 @@ export default function OrdersPage() {
 
   const formatPrice = (price: number) => {
     return `$${price.toLocaleString("es-AR")}`
+  }
+
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text)
+    setCopiedField(field)
+    setTimeout(() => setCopiedField(null), 2000)
   }
 
   const wasModified = (order: Order) => {
@@ -278,6 +297,61 @@ export default function OrdersPage() {
                           <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-300 text-sm">
                             <AlertTriangle className="h-4 w-4 shrink-0" />
                             <span>La tienda modificó este pedido</span>
+                          </div>
+                        )}
+
+                        {/* Transfer details for confirmed orders */}
+                        {order.status === "confirmed" && order.transferDetails && (
+                          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
+                            <h4 className="font-semibold text-blue-900 dark:text-blue-300 flex items-center gap-2">
+                              <CreditCard className="h-4 w-4" />
+                              Datos para la transferencia
+                            </h4>
+                            <div className="space-y-2 text-sm">
+                              {order.transferDetails.bankName && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-blue-700 dark:text-blue-400">Banco:</span>
+                                  <span className="font-medium text-blue-900 dark:text-blue-200">{order.transferDetails.bankName}</span>
+                                </div>
+                              )}
+                              {order.transferDetails.holder && (
+                                <div className="flex justify-between items-center">
+                                  <span className="text-blue-700 dark:text-blue-400">Titular:</span>
+                                  <span className="font-medium text-blue-900 dark:text-blue-200">{order.transferDetails.holder}</span>
+                                </div>
+                              )}
+                              {order.transferDetails.cbu && (
+                                <div className="flex justify-between items-center gap-2">
+                                  <span className="text-blue-700 dark:text-blue-400">CBU/CVU:</span>
+                                  <div className="flex items-center gap-1">
+                                    <span className="font-mono font-medium text-blue-900 dark:text-blue-200 text-xs">{order.transferDetails.cbu}</span>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); copyToClipboard(order.transferDetails!.cbu!, `cbu-${order.orderNumber}`); }}
+                                      className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded"
+                                    >
+                                      {copiedField === `cbu-${order.orderNumber}` ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3 text-blue-500" />}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                              {order.transferDetails.alias && (
+                                <div className="flex justify-between items-center gap-2">
+                                  <span className="text-blue-700 dark:text-blue-400">Alias:</span>
+                                  <div className="flex items-center gap-1">
+                                    <span className="font-medium text-blue-900 dark:text-blue-200">{order.transferDetails.alias}</span>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); copyToClipboard(order.transferDetails!.alias!, `alias-${order.orderNumber}`); }}
+                                      className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded"
+                                    >
+                                      {copiedField === `alias-${order.orderNumber}` ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3 text-blue-500" />}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">
+                              Realizá la transferencia por {formatPrice(order.total)} y nos pondremos en contacto para confirmar el pago.
+                            </p>
                           </div>
                         )}
                         
